@@ -1,14 +1,18 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const memberSchema = new Schema(
+
+const MemberSchema = new Schema(
   {
     membername: { type: String, required: true },
     password: { type: String, required: true },
     name: { type: String, required: true },
     avatar: { type: String, required: true },
     YoB: { type: Number, required: true },
+    occupation: { type: String, required: true },
+    interests: { type: [String], required: true },
     isAdmin: { type: Boolean, required: true },
   },
   { timestamps: true }
 );
-module.exports = memberSchema;
+
+module.exports = MemberSchema;

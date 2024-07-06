@@ -10,6 +10,7 @@ const createToken = (user, expiredTime, SecretKey) => {
       YoB: user.YoB,
       isAdmin: user.isAdmin,
       expiredAt: expiredAt,
+      name: user.name,
     };
     const token = jwt.sign(signContent, SecretKey);
     return token;

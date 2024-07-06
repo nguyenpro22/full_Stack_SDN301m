@@ -14,12 +14,12 @@ const handleUpdateUserProfile = async (req, res, next) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const updateContent = {
-      password: hashedPassword,
       name: req.body.name,
       avatar: req.body.avatar,
       YoB: req.body.YoB,
+      interests: req.body.interests,
+      occupations: req.body.occupations,
     };
 
     const result = await MemberModel.updateOne(
@@ -33,6 +33,46 @@ const handleUpdateUserProfile = async (req, res, next) => {
     return makeJsonResponse(res, {
       status: 201,
       message: "User profile updated successfully",
+    });
+  } catch (error) {
+    return makeErrorResponse(res, {
+      status: 500,
+      message: error.message || Error.UNKNOWN.message,
+    });
+  }
+};
+
+const handleUpdateUserPassword = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return makeErrorResponse(res, Error.VALIDATION_ERROR);
+  }
+
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const user = await MemberModel.findById(req.user.id);
+
+    if (!user) {
+      return makeErrorResponse(res, Error.UN_AUTHORIZATION);
+    }
+
+    // So sánh mật khẩu cũ với mật khẩu đã băm lưu trữ
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return makeErrorResponse(res, Error.BAD_REQUEST);
+    }
+
+    // Hash mật khẩu mới
+    const hashNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Cập nhật mật khẩu mới
+    user.password = hashNewPassword;
+    await user.save();
+
+    return makeJsonResponse(res, {
+      status: 201,
+      message: "Password updated successfully",
     });
   } catch (error) {
     return makeErrorResponse(res, {
@@ -80,4 +120,5 @@ const handleAdminUpdateUser = async (req, res, next) => {
 module.exports = {
   handleUpdateUserProfile,
   handleAdminUpdateUser,
+  handleUpdateUserPassword,
 };

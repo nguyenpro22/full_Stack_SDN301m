@@ -23,8 +23,8 @@ router.get(
 router.get(
   "/:id",
   JwtAuthenticate,
-  authorizeUser.authorizeAdminRole("ADMIN"),
-  Controller.MemberController.Get.handleAdminGetUserById
+  authorizeUser.authenticateSession,
+  Controller.MemberController.Get.handleGetUserById
 );
 
 router.post(
@@ -40,10 +40,19 @@ router.put(
   userUpdateProfileValidator(),
   Controller.MemberController.Put.handleUpdateUserProfile
 );
+
+router.put(
+  "/profile/pwd",
+  JwtAuthenticate,
+  authorizeUser.authenticateSession,
+  Controller.MemberController.Put.handleUpdateUserPassword
+);
+
 router.put(
   "/:id",
   JwtAuthenticate,
   userUpdateValidator(),
+  authorizeUser.authorizeAdminRole,
   Controller.MemberController.Put.handleAdminUpdateUser
 );
 

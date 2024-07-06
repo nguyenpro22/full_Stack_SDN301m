@@ -31,6 +31,8 @@ const handleSignUp = async (req, res, next) => {
       avatar: req.body.avatar,
       YoB: req.body.YoB,
       isAdmin: false,
+      interests: req.body.interests,
+      occupations: req.body.occupations,
     };
 
     const newUser = new MemberModel(user);

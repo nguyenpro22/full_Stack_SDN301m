@@ -7,7 +7,7 @@ const { makeErrorResponse } = require("../../utils/http.utils");
 module.exports = new LocalStrategy(async (username, password, done) => {
   try {
     const user = await MemberModel.findOne({ membername: username });
-
+    console.log(user);
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
 

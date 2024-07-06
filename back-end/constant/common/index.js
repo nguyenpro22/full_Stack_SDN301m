@@ -30,6 +30,11 @@ module.exports = {
       max: new Date().getFullYear(),
       message: `Year of Birth must be between 1900 and ${new Date().getFullYear()}`,
     },
+    occupation: {
+      minLength: 1,
+      maxLength: 50,
+      message: "Occupation must be between 1 and 50 characters",
+    },
   },
 
   Watch: {

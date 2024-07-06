@@ -19,6 +19,8 @@ const handleGetUserById = async function (req, res, next) {
             YoB: user.YoB,
             isAdmin: user.role,
             id: user.id,
+            occupation: user.occupation,
+            interests: user.interests,
           },
         });
       } else {
