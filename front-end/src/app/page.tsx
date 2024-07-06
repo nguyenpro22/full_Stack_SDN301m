@@ -1,6 +1,6 @@
 "use client";
 
-import HomePage from "@/app/(user)/home";
+import HomePage from "./(user)/home";
 import AppHeader from "@/components/Header";
 import AppSidebar from "@/components/Sidebar";
 import { Layout } from "antd";

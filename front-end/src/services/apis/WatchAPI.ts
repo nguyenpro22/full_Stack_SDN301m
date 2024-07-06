@@ -21,7 +21,7 @@ export const watchApi = createApi({
     }),
     getWatchByBrandId: builder.query<IResCommon<IWatch[]>, string | undefined>({
       query: (id) => ({
-        url: `/watch//brand/${id}`,
+        url: `/watch/brand/${id}`,
       }),
       providesTags: ["Watch"],
     }),

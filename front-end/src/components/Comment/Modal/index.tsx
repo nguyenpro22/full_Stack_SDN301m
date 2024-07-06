@@ -11,7 +11,7 @@ interface ICommentModalProps {
   title: string;
 }
 
-const CommentModal: React.FC<CommentModalProps> = ({
+const CommentModal: React.FC<ICommentModalProps> = ({
   showModal,
   setShowModal,
   handleSubmit,

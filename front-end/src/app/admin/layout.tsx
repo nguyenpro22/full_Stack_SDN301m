@@ -2,9 +2,8 @@
 import React from "react";
 import { Layout, Menu } from "antd";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import AppHeader from "@/components/Header";
-import { GetDataByToken, getCookie } from "@/utils";
+import { usePathname } from "next/navigation";
 
 const { Sider, Content } = Layout;
 
@@ -14,13 +13,7 @@ interface IProps {
 
 const AdminLayout: React.FC<IProps> = ({ children }) => {
   const pathname = usePathname();
-  const router = useRouter();
-  const token = getCookie("jwt") as string;
-  const { isAdmin } = GetDataByToken(token);
 
-  if (!token || !isAdmin) {
-    router.push("/errors/403");
-  }
   return (
     <>
       <AppHeader />

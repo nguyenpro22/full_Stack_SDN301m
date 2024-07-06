@@ -1,9 +1,9 @@
 import { Card, Button, Popconfirm, Rate, Avatar } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Comment } from "@/types";
+import { IComment } from "@/types";
 
 interface ICommentsListProps {
-  comments: Comment[];
+  comments: IComment[];
   id: string;
   popOpen: boolean;
   openEditModal: (id: string, rating: number, content: string) => void;
@@ -12,7 +12,7 @@ interface ICommentsListProps {
   handleCancel: () => void;
 }
 
-const CommentsList: React.FC<CommentsListProps> = ({
+const CommentsList: React.FC<ICommentsListProps> = ({
   comments,
   id,
   popOpen,

@@ -20,7 +20,7 @@ import {
   useDeleteCommentByIdMutation,
   useGetWatchByIdQuery,
 } from "@/services/apis";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import WatchDetails from "@/components/Details";
 import { CommentModal, CommentsList } from "@/components/Comment";
@@ -32,6 +32,7 @@ interface Props {
 
 const Details: React.FC<Props> = () => {
   const params = useParams();
+  const router = useRouter();
   const watchId = params.id as string;
   const { data: watchData, refetch } = useGetWatchByIdQuery(watchId, {
     skip: !watchId,
@@ -53,7 +54,7 @@ const Details: React.FC<Props> = () => {
 
   const token = getCookie("jwt") as string;
 
-  const { id, name } = GetDataByToken(token);
+  const { id } = GetDataByToken(token);
 
   useEffect(() => {
     if (comments.length > 0) {
@@ -114,7 +115,15 @@ const Details: React.FC<Props> = () => {
         toast.success("Đánh giá đã được cập nhật thành công");
         handleOnCloseModal();
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error && error.status === 401) {
+        toast.error(
+          "Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục."
+        );
+        router.push("/auth/login");
+        return;
+      }
+
       toast.error("Cập nhật đánh giá không thành công");
     }
   };

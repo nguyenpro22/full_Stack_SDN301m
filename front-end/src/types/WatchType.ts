@@ -1,4 +1,4 @@
-import { Comment } from "./CommentType";
+import { IComment } from "./CommentType";
 
 export interface IWatch {
   id: string;
@@ -11,5 +11,5 @@ export interface IWatch {
     _id: string;
     brandName: string;
   };
-  comments: Comment[];
+  comments: IComment[];
 }

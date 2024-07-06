@@ -1,6 +1,7 @@
+import Error from "next/error";
 import WatchCard from "@/components/Card";
 import { useGetWatchByBrandIdQuery, useGetWatchesQuery } from "@/services/apis";
-import { Watch } from "@/types";
+import { IWatch } from "@/types";
 import { LoadingOutlined } from "@ant-design/icons";
 import { Spin } from "antd";
 import React, { useState, useEffect } from "react";
@@ -9,7 +10,7 @@ interface IHomePageProps {
   brandId?: string;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ brandId }) => {
+const HomePage: React.FC<IHomePageProps> = ({ brandId }) => {
   const {
     data: watchesData,
     error: watchesError,
@@ -23,7 +24,7 @@ const HomePage: React.FC<HomePageProps> = ({ brandId }) => {
     skip: !brandId,
   });
 
-  const [filteredWatches, setFilteredWatches] = useState<Watch[]>([]);
+  const [filteredWatches, setFilteredWatches] = useState<IWatch[]>([]);
 
   useEffect(() => {
     if (brandId && watchData) {
@@ -49,7 +50,7 @@ const HomePage: React.FC<HomePageProps> = ({ brandId }) => {
   return (
     <div className="flex flex-wrap justify-center gap-4 mt-4">
       {filteredWatches.length > 0 ? (
-        filteredWatches.map((watch: Watch) => (
+        filteredWatches.map((watch: IWatch) => (
           <WatchCard key={watch.id} watch={watch} loading={isLoading} />
         ))
       ) : (

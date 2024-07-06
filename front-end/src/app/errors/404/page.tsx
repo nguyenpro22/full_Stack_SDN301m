@@ -1,36 +1,54 @@
 "use client";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Head from "next/head";
 
-import React from "react";
-import Link from "next/link";
-import { Button } from "antd";
+const NotFound: React.FC = () => {
+  const router = useRouter();
+  const [key, setKey] = useState(0);
 
-const Page404 = () => {
+  const handleBackToHome = () => {
+    router.push("/");
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setKey((prevKey) => prevKey + 1);
+    }, 5500); // 3.5s typing + 2s delay
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <section className="page_404 flex items-center justify-center min-h-screen bg-white">
-      <div className="container text-center">
+    <div
+      className="w-screen h-screen flex flex-col justify-center items-center bg-black text-green-500"
+      style={{ fontFamily: "'Press Start 2P', cursive" }}
+    >
+      <Head>
+        <link
+          href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
+      <div className="flex flex-col justify-between items-center h-1/2">
         <div
-          className="four_zero_four_bg bg-no-repeat bg-center flex flex-col justify-between  bg-cover h-screen"
-          style={{
-            backgroundImage:
-              "url(https://cdn.dribbble.com/users/285475/screenshots/2083086/dribbble_1.gif)",
-          }}
+          className="text-9xl"
+          style={{ textShadow: "0px 0px 10px #54FE55" }}
         >
-          <h1 className="text-6xl">404</h1>
-          <div className="contant_box_404 mt-20">
-            <h3 className="text-2xl font-semibold">Look like you're lost</h3>
-            <p className="text-lg">
-              The page you are looking for is not available!
-            </p>
-            <Link href="/">
-              <Button className="link_404 inline-block mt-4 py-2 px-6 bg-green-600 text-white rounded hover:bg-green-700">
-                Go to Home
-              </Button>
-            </Link>
-          </div>
+          404
         </div>
+        <div key={key} className="typewriter text-5xl">
+          <h1>THE PAGE YOU REQUESTED WAS NOT FOUND</h1>
+        </div>
+        <button
+          onClick={handleBackToHome}
+          className="px-4 py-2 bg-green-500 text-black text-sm font-bold uppercase rounded"
+        >
+          Back to Home
+        </button>
       </div>
-    </section>
+    </div>
   );
 };
 
-export default Page404;
+export default NotFound;

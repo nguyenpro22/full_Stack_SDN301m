@@ -21,7 +21,9 @@ const AppHeader: React.FC = () => {
 
   const handleLogout = () => {
     clearToken();
-    window.location.href = "/auth/login"; // redirect to login after logout
+    if (path.match("^/admin/*")) {
+      window.location.href = "/auth/login";
+    }
   };
 
   const token = isClient ? getCookie("jwt") : null;
