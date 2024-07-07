@@ -33,6 +33,8 @@ router.post(
   Controller.MemberController.Post.handleSignUp
 );
 
+router.post("/rs-pwd", Controller.MemberController.Post.handleSendEmail);
+
 router.put(
   "/profile",
   JwtAuthenticate,
@@ -52,7 +54,7 @@ router.put(
   "/:id",
   JwtAuthenticate,
   userUpdateValidator(),
-  authorizeUser.authorizeAdminRole,
+  authorizeUser.authorizeAdminRole(),
   Controller.MemberController.Put.handleAdminUpdateUser
 );
 

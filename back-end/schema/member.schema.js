@@ -8,8 +8,8 @@ const MemberSchema = new Schema(
     name: { type: String, required: true },
     avatar: { type: String, required: true },
     YoB: { type: Number, required: true },
-    occupation: { type: String, required: true },
-    interests: { type: [String], required: true },
+    occupation: { type: String },
+    interests: { type: [String] },
     isAdmin: { type: Boolean, required: true },
   },
   { timestamps: true }

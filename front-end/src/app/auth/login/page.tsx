@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button, Card } from "antd";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -8,14 +8,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useLoginMutation } from "@/services/apis";
 import { GetDataByToken, setCookie } from "@/utils";
+import Error from "next/error";
+import { ForgotPasswordModal } from "@/components/User";
 
 const schema = yup.object().shape({
   username: yup
     .string()
     .required("Please input your username!")
     .matches(
-      /^[a-zA-Z0-9_@]+$/,
-      "Username can only contain letters, numbers, _ and @"
+      /^[a-zA-Z0-9_.@]+$/,
+      "Username can only contain letters, numbers, _ @ and ."
     ),
   password: yup
     .string()
@@ -34,11 +36,28 @@ const LoginPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   const [login] = useLoginMutation();
 
   const onSubmit = async (data: any) => {
     try {
       const response = await login(data);
+      if (response.data?.code === 401) {
+        throw new Error({
+          statusCode: 401,
+          message: "Sai tên đăng nhập hoặc mật khẩu",
+        });
+      }
+
       toast.success("Login successful");
       const { token } = response?.data as any;
       setCookie("jwt", token);
@@ -48,17 +67,17 @@ const LoginPage: React.FC = () => {
       } else {
         router.push("/");
       }
-    } catch (err) {
-      console.log(err);
-
-      toast.error("Login failed");
+    } catch (err: any) {
+      toast.error(err.props.message);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-md p-6 shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-green-400 to-blue-500 p-4">
+      <Card className="w-full max-w-md p-6 shadow-lg rounded-lg bg-white">
+        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+          Login
+        </h2>
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
@@ -71,9 +90,9 @@ const LoginPage: React.FC = () => {
             <input
               {...register("username")}
               placeholder="Username"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`w-full px-4 py-2 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-100`}
             />
             {errors.username && (
               <span className="text-red-600 text-sm">
@@ -89,9 +108,9 @@ const LoginPage: React.FC = () => {
               type="password"
               {...register("password")}
               placeholder="Password"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`w-full px-4 py-2 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-100`}
             />
             {errors.password && (
               <span className="text-red-600 text-sm">
@@ -111,7 +130,7 @@ const LoginPage: React.FC = () => {
         </form>
         <div className="text-center mt-4">
           <p>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <a
               onClick={() => router.push("/auth/register")}
               className="text-indigo-600 hover:underline cursor-pointer"
@@ -119,6 +138,14 @@ const LoginPage: React.FC = () => {
               Register
             </a>
           </p>
+          <Button
+            type="link"
+            className="text-indigo-600 mt-2"
+            onClick={showModal}
+          >
+            Forgot Password
+          </Button>
+          <ForgotPasswordModal isOpen={isModalOpen} onClose={handleCancel} />
         </div>
       </Card>
     </div>

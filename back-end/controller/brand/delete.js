@@ -1,5 +1,5 @@
 const Error = require("../../constant/error/Error");
-const { BrandModel } = require("../../models");
+const { BrandModel, WatchModel } = require("../../models");
 const {
   makeErrorResponse,
   makeJsonResponse,
@@ -15,7 +15,7 @@ const handleDeleteBrandById = async (req, res, next) => {
 
     // If the brand exists, proceed to delete it
     await BrandModel.findByIdAndDelete(req.params.id);
-
+    await WatchModel.deleteMany({ brand: req.params.id });
     // Return success response
     return makeJsonResponse(res, {
       status: "ok",

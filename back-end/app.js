@@ -9,6 +9,8 @@ const DBConfig = require("./configs/mongodb.config.js");
 var app = express();
 const { DBConnect } = require("./utils/DBUtils");
 const passport = require("passport");
+const fs = require("fs");
+
 const { PassportService } = require("./services/index.js");
 const { makeErrorResponse } = require("./utils/http.utils.js");
 const flash = require("connect-flash");

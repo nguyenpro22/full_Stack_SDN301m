@@ -8,8 +8,8 @@ interface IDocumentSize {
   height: number;
 }
 
-const useDocumentSize = (): DocumentSize => {
-  const [documentSize, setDocumentSize] = useState<DocumentSize>({
+const useDocumentSize = (): IDocumentSize => {
+  const [documentSize, setDocumentSize] = useState<IDocumentSize>({
     width: 0,
     height: 0,
   });

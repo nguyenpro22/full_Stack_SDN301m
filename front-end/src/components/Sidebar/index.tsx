@@ -1,19 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Layout, Menu, theme, Input, Select } from "antd";
 import { useRouter } from "next/navigation";
 import { useToken } from "antd/es/theme/internal";
 import { useGetBrandsQuery } from "@/services/apis";
-import { Brand } from "@/types";
+import { IBrand } from "@/types";
 
 const { Sider } = Layout;
 const { Search } = Input;
 const { Option } = Select;
 
 interface IAppSidebarProps {
-  onFilter: (brandId: string | undefined) => void;
+  onFilter: (brandId: string | undefined, searchValue: string) => void;
 }
 
-const AppSidebar: React.FC<AppSidebarProps> = ({ onFilter }) => {
+const AppSidebar: React.FC<IAppSidebarProps> = ({ onFilter }) => {
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedBrand, setSelectedBrand] = useState<string | undefined>(
+    undefined
+  );
   const router = useRouter();
   const {
     token: { colorBgContainer },
@@ -22,16 +26,17 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ onFilter }) => {
   const { data, error, isLoading } = useGetBrandsQuery();
 
   const onSearch = (value: string) => {
-    console.log("Search:", value);
-    // Implement search functionality here
+    setSearchQuery(value);
+
+    onFilter(selectedBrand, value);
   };
 
   const handleCategoryChange = (value: string) => {
-    console.log("Selected Category:", value);
-    onFilter(value);
+    setSelectedBrand(value);
+    onFilter(value, searchQuery);
   };
 
-  const brands: Brand[] = data?.data || [];
+  const brands: IBrand[] = data?.data || [];
 
   return (
     <Sider
@@ -39,7 +44,11 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ onFilter }) => {
       style={{ backgroundColor: colorBgContainer }}
     >
       <div className="p-4">
-        <Search placeholder="Search watches" onSearch={onSearch} enterButton />
+        <Search
+          placeholder="Search watches"
+          onChange={(e) => onSearch(e.target.value)}
+          enterButton
+        />
       </div>
       <div className="p-4">
         {isLoading ? (

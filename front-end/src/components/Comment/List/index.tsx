@@ -28,14 +28,14 @@ const CommentsList: React.FC<ICommentsListProps> = ({
           <Card key={index} className="bg-gray-100">
             <div className="flex items-center gap-4">
               <Avatar
-                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${comment.author.name}`}
+                src={`${comment?.author?.avatar}?seed=${comment?.author?.name}`}
                 size="large"
               />
               <div>
-                <div className="font-medium">{comment.author.name}</div>
+                <div className="font-medium">{comment?.author?.name}</div>
                 <Rate disabled value={comment.rating} />
               </div>
-              {comment.author._id === id && (
+              {comment?.author?._id === id && (
                 <div className="ml-auto flex items-center gap-2">
                   <Button
                     type="text"

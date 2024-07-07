@@ -6,4 +6,6 @@ export interface IUser {
   userName?: string;
   avatar?: string;
   isAdmin?: boolean;
+  occupation?: string;
+  interests?: string[];
 }

@@ -1,45 +1,36 @@
 "use client";
 
-import {
-  Card,
-  Button,
-  Rate,
-  Modal,
-  Input,
-  Image,
-  Popconfirm,
-  Avatar,
-} from "antd";
-import { useState, useEffect } from "react";
-import { StarOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { IWatch } from "@/types";
-import { GetDataByToken, getCookie } from "@/utils";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { Card, Button } from "antd";
+import { StarOutlined } from "@ant-design/icons";
+import { IComment } from "@/types";
+import { GetDataByToken, getAccessToken } from "@/utils";
 import {
   useCreateCommentMutation,
   useUpdateCommentByIdMutation,
   useDeleteCommentByIdMutation,
   useGetWatchByIdQuery,
 } from "@/services/apis";
-import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import WatchDetails from "@/components/Details";
 import { CommentModal, CommentsList } from "@/components/Comment";
 import AppHeader from "@/components/Header";
 
-interface Props {
-  data: IWatch;
-}
-
-const Details: React.FC<Props> = () => {
+const Details = () => {
   const params = useParams();
   const router = useRouter();
   const watchId = params.id as string;
   const { data: watchData, refetch } = useGetWatchByIdQuery(watchId, {
     skip: !watchId,
   });
-  const comments = watchData?.data.comments
-    ? [...watchData?.data.comments].reverse()
-    : [];
+
+  const comments: IComment[] = useMemo(() => {
+    return watchData?.data.comments
+      ? [...watchData.data.comments].reverse()
+      : [];
+  }, [watchData]);
 
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -52,8 +43,7 @@ const Details: React.FC<Props> = () => {
   const [updateCommentById] = useUpdateCommentByIdMutation();
   const [deleteCommentById] = useDeleteCommentByIdMutation();
 
-  const token = getCookie("jwt") as string;
-
+  const token = getAccessToken() as string;
   const { id } = GetDataByToken(token);
 
   useEffect(() => {
@@ -109,7 +99,7 @@ const Details: React.FC<Props> = () => {
     try {
       if (currentCommentId) {
         await updateCommentById({
-          watchId: watchId,
+          watchId,
           body: { rating, content },
         }).unwrap();
         toast.success("Đánh giá đã được cập nhật thành công");
@@ -131,7 +121,7 @@ const Details: React.FC<Props> = () => {
   const handleDeleteComment = async (commentId: string) => {
     try {
       setPopOpen(false);
-      await deleteCommentById({ watchId: watchId, commentId }).unwrap();
+      await deleteCommentById({ watchId, commentId }).unwrap();
       toast.success("Đánh giá đã được xóa thành công");
       handleOnCloseModal();
     } catch (error) {
@@ -152,9 +142,9 @@ const Details: React.FC<Props> = () => {
   }
 
   return (
-    <>
+    <div className="h-[100vh]">
       <AppHeader />
-      <div className="max-w-6xl mx-auto p-6 mt-2 mb-2 bg-white rounded-lg shadow-lg">
+      <div className="max-w-6xl mx-auto p-6 mt-4 mb-2 bg-white rounded-lg shadow-lg">
         <div className="grid md:grid-cols-2 gap-10">
           <WatchDetails data={watchData?.data} avgRating={avgRating} />
           <Card
@@ -218,7 +208,7 @@ const Details: React.FC<Props> = () => {
           title="Chỉnh sửa đánh giá"
         />
       </div>
-    </>
+    </div>
   );
 };
 

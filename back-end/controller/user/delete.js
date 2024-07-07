@@ -1,5 +1,10 @@
 const Error = require("../../constant/error/Error");
-const { BrandModel, MemberModel } = require("../../models");
+const {
+  BrandModel,
+  MemberModel,
+  WatchModel,
+  CommentModel,
+} = require("../../models");
 const {
   makeErrorResponse,
   makeJsonResponse,
@@ -15,7 +20,17 @@ const handleDeleteUser = async (req, res, next) => {
       return makeErrorResponse(res, Error.NOT_FOUND);
     }
 
+    // Delete the user
     await MemberModel.findByIdAndDelete(userId);
+
+    // Delete all comments made by the user in WatchModel
+    await WatchModel.updateMany(
+      {},
+      { $pull: { comments: { author: userId } } }
+    );
+
+    // Delete all comments made by the user in CommentModel
+    await CommentModel.deleteMany({ author: userId });
 
     return makeJsonResponse(res, {
       status: 200,
@@ -27,6 +42,7 @@ const handleDeleteUser = async (req, res, next) => {
       // If the error is due to an invalid ObjectId, send a 400 response
       return makeErrorResponse(res, Error.BAD_REQUEST);
     }
+    console.log(error);
 
     // For any other errors, send a 500 response
     return makeErrorResponse(res, Error.UNKNOWN);

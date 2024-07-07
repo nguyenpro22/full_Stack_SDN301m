@@ -15,13 +15,13 @@ export const brandApi = createApi({
     }),
     getBrandById: builder.query<IResCommon<IBrand>, string | undefined>({
       query: (id) => ({
-        url: `/brands/${id}`,
+        url: `/brand/${id}`,
       }),
       providesTags: ["Brand"],
     }),
     createBrand: builder.mutation<IResCommon<IBrand>, Partial<IBrand>>({
       query: (body) => ({
-        url: "/brands",
+        url: "/brand",
         method: "POST",
         body,
       }),
@@ -32,7 +32,7 @@ export const brandApi = createApi({
       { id: string; body: Partial<IBrand> }
     >({
       query: ({ id, body }) => ({
-        url: `/brands/${id}`,
+        url: `/brand/${id}`,
         method: "PUT",
         body,
       }),
@@ -40,7 +40,7 @@ export const brandApi = createApi({
     }),
     deleteBrandById: builder.mutation<IResCommon<IBrand>, string>({
       query: (id) => ({
-        url: `/brands/${id}`,
+        url: `/brand/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Brand"],

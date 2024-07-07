@@ -1,3 +1,6 @@
+import { CookieStorageKey } from "@/constants";
+
+// utils.ts
 type CookieKey = string;
 
 // Get the value of a cookie
@@ -28,5 +31,10 @@ export function setCookie(
 export function removeCookie(key: CookieKey): void {
   if (typeof document === "undefined") return;
 
-  document.cookie = `${key}=; Max-Age=-99999999;`;
+  document.cookie = `${key}=; Max-Age=-99999999;path=/`;
+}
+
+export function clearCookieStorage(): void {
+  removeCookie(CookieStorageKey.ACCESS_TOKEN);
+  removeCookie(CookieStorageKey.REFRESH_TOKEN);
 }

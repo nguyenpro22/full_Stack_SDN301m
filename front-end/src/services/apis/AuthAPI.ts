@@ -16,7 +16,7 @@ export const authAPI = createApi({
     }),
     register: builder.mutation<IResCommon<IRegisterResponse>, Partial<IUser>>({
       query: (body) => ({
-        url: `/authen/register`,
+        url: `/member`,
         method: "POST",
         body,
       }),

@@ -10,6 +10,7 @@ const handleUpdateBrandName = async (req, res, next) => {
   try {
     // Kiểm tra lỗi validation từ request
     const errors = validationResult(req);
+    console.log(errors);
     if (!errors.isEmpty()) {
       return makeErrorResponse(res, Error.VALIDATION_ERROR);
     }

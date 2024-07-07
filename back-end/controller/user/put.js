@@ -95,10 +95,6 @@ const handleAdminUpdateUser = async (req, res, next) => {
     const updateContent = {
       isAdmin: user.isAdmin,
     };
-    if (user.password) {
-      const hashedPassword = await bcrypt.hash(user.password, 10);
-      updateContent.password = hashedPassword;
-    }
 
     const result = await MemberModel.updateOne({ _id: userId }, updateContent);
     if (result.nModified === 0) {

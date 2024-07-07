@@ -17,8 +17,9 @@ router.get(
 
 router.post(
   "/",
+  JwtAuthenticate,
   brandValidator(),
-  authorizeUser.authorizeAdminRole,
+  authorizeUser.authorizeAdminRole(),
   Controller.BrandController.Post.handleAddNewBrand
 );
 

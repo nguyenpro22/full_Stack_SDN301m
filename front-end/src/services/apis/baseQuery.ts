@@ -1,11 +1,5 @@
-import { CookieStorageKey, PublicRoute, SessionStorageKey } from "@/constants";
-import {
-  clearToken,
-  getCookie,
-  setCookie,
-  getRefreshToken,
-  setRefreshToken,
-} from "@/utils";
+import { CookieStorageKey } from "@/constants";
+import { getAccessToken, getCookie, getRefreshToken } from "@/utils";
 import {
   BaseQueryFn,
   FetchArgs,
@@ -16,8 +10,7 @@ import {
 export const baseQuery = fetchBaseQuery({
   baseUrl: process.env["NEXT_PUBLIC_BASE_API_URL"],
   prepareHeaders: (headers) => {
-    const token = getCookie(CookieStorageKey.ACCESS_TOKEN);
-
+    const token = getAccessToken();
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }

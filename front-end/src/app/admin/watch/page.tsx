@@ -12,13 +12,28 @@ import {
   InputNumber,
   Checkbox,
   message,
+  Spin,
+  Popconfirm,
 } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { useGetWatchesQuery, useGetBrandsQuery } from "@/services/apis";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  LoadingOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import {
+  useGetWatchesQuery,
+  useGetBrandsQuery,
+  useCreateWatchMutation,
+  useUpdateWatchByIdMutation,
+  useDeleteWatchByIdMutation,
+} from "@/services/apis";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { IBrand, IWatch } from "@/types";
+import Error from "next/error";
 
 const schema = yup.object().shape({
   watchName: yup
@@ -33,19 +48,23 @@ const schema = yup.object().shape({
     .required("Price is required"),
   watchDescription: yup
     .string()
-    .max(200, "Description must be less than 200 characters"),
+    .max(200, "Description must be under 200 characters"),
   brand: yup.string().required("Brand is required"),
   image: yup.string().required("Image URL is required"),
-  Automatic: yup.boolean().required("Automatic field is required"),
+  Automatic: yup.boolean().required("Automatic is required"),
 });
 
 const WatchesManagementPage: React.FC = () => {
-  const { data: watchData, isLoading, isError } = useGetWatchesQuery();
+  const { data: watchData, isLoading, error, refetch } = useGetWatchesQuery();
   const { data: brandData } = useGetBrandsQuery();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingWatch, setEditingWatch] = useState<any | null>(null);
+  const [updateWatch] = useUpdateWatchByIdMutation();
+  const [addWatch] = useCreateWatchMutation();
+  const [deleteWatch] = useDeleteWatchByIdMutation();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingWatch, setEditingWatch] = useState<IWatch | null>(null);
   const [watches, setWatches] = useState<IWatch[]>([]);
   const [brands, setBrands] = useState<IBrand[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     control,
@@ -65,11 +84,14 @@ const WatchesManagementPage: React.FC = () => {
     }
   }, [watchData, brandData]);
 
-  const showModal = (watch = null) => {
+  const showModal = (watch: IWatch | null = null) => {
     setEditingWatch(watch);
-    setIsModalVisible(true);
+    setIsModalOpen(true);
     if (watch) {
-      reset(watch);
+      reset({
+        ...watch,
+        brand: watch.brand._id, // Set brand ID for the form
+      });
     } else {
       reset({
         watchName: "",
@@ -83,66 +105,165 @@ const WatchesManagementPage: React.FC = () => {
   };
 
   const handleOk = handleSubmit(async (formData) => {
-    if (editingWatch) {
-      // Update watch
-      // Implement update logic here
-      message.success("Watch updated successfully");
-    } else {
-      // Add new watch
-      // Implement add logic here
-      message.success("Watch added successfully");
+    try {
+      const selectedBrand = brands.find((b) => b.id === formData.brand);
+      if (!selectedBrand) {
+        throw new Error({ statusCode: 400, message: "Please select a brand" });
+      }
+
+      const body = {
+        ...formData,
+        brand: { _id: selectedBrand.id, brandName: selectedBrand.brandName }, // Convert brand ID to brand object
+      };
+
+      if (editingWatch) {
+        // Update watch
+        const response = await updateWatch({ id: editingWatch.id, body });
+        if (response.data?.code === 404) {
+          throw new Error({
+            statusCode: 404,
+            message: "Watch not found",
+          });
+        }
+        message.success("Watch updated successfully");
+      } else {
+        // Add new watch
+        const response = await addWatch(body);
+        if (response.data?.code === 409) {
+          throw new Error({
+            statusCode: 409,
+            message: "Watch name already exists",
+          });
+        }
+        message.success("Watch added successfully");
+      }
+      refetch();
+      setIsModalOpen(false);
+      reset();
+    } catch (error: any) {
+      if (error.props?.statusCode) message.error(error.props.message);
+      else message.error("An error occurred, please try again");
     }
-    setIsModalVisible(false);
-    reset();
   });
 
   const handleCancel = () => {
-    setIsModalVisible(false);
+    setIsModalOpen(false);
     reset();
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await deleteWatch(id);
+      if (response.data?.code === 404) {
+        throw new Error({
+          statusCode: 404,
+          message: "Watch not found",
+        });
+      }
+      message.success("Watch deleted successfully");
+      refetch();
+    } catch (error: any) {
+      if (error.props?.statusCode) {
+        message.error(error.props.message);
+      } else message.error("Failed to delete watch");
+    }
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const filteredWatches = watches.filter((watch) =>
+    watch.watchName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const columns = [
-    { title: "Watch Name", dataIndex: "watchName", key: "watchName" },
-    { title: "Price", dataIndex: "price", key: "price" },
+    {
+      title: "Watch Name",
+      dataIndex: "watchName",
+      key: "watchName",
+      align: "center" as const,
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      align: "center" as const,
+      render: (price: number) => `$${price.toFixed(2)}`,
+    },
     {
       title: "Brand",
-      dataIndex: ["brand", "brandName"],
+      dataIndex: "brand",
       key: "brand",
+      align: "center" as const,
       render: (brand: IBrand) => (brand ? brand.brandName : ""),
     },
     {
       title: "Action",
       key: "action",
-      render: (_text: any, record: any) => (
+      align: "center" as const,
+      render: (_text: any, record: IWatch) => (
         <Space size="middle">
           <Button icon={<EditOutlined />} onClick={() => showModal(record)}>
             Edit
           </Button>
-          <Button icon={<DeleteOutlined />} danger>
-            Delete
-          </Button>
+          <Popconfirm
+            title="Are you sure you want to delete this watch?"
+            onConfirm={() => handleDelete(record.id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button icon={<DeleteOutlined />} danger>
+              Delete
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <p>Error loading watches</p>;
+  }
+
   return (
-    <div className="p-4 bg-gray-100 h-full">
-      <h1 className="text-2xl font-bold mb-4">Watches Management</h1>
+    <div className="p-4 bg-gradient-to-r from-green-200 via-blue-200 to-purple-200 h-full">
+      <h2 className="text-3xl font-bold mb-6 text-center">
+        Watches Management
+      </h2>
+      <Input
+        placeholder="Search watches"
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={handleSearch}
+        className="mb-6 w-full max-w-md mx-auto"
+      />
       <Button
         type="primary"
         icon={<PlusOutlined />}
         onClick={() => showModal()}
-        className="mb-4"
+        className="mb-6"
       >
         Add Watch
       </Button>
-      <div className="overflow-auto h-[calc(100%-100px)]">
-        <Table columns={columns} dataSource={watches} rowKey="id" />
-      </div>
+      <Table
+        columns={columns}
+        dataSource={filteredWatches}
+        rowKey="id"
+        pagination={{ pageSize: 5 }}
+        className="bg-white shadow-md rounded-lg overflow-hidden"
+      />
       <Modal
         title={editingWatch ? "Edit Watch" : "Add Watch"}
-        open={isModalVisible}
+        open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
       >

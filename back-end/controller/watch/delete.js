@@ -1,4 +1,4 @@
-const { WatchModel } = require("../../models");
+const { WatchModel, CommentModel } = require("../../models");
 const {
   makeErrorResponse,
   makeJsonResponse,
@@ -14,7 +14,7 @@ const handleDeleteWatchById = async (req, res, next) => {
     if (!deletedWatch) {
       return makeErrorResponse(res, Error.NOT_FOUND);
     }
-
+    await CommentModel.find({});
     makeJsonResponse(res, { message: "Watch deleted successfully" });
   } catch (error) {
     console.error(error);

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Avatar, Dropdown, Layout, Menu, Button } from "antd";
 import Link from "next/link";
-import { clearToken, getCookie } from "@/utils";
+import { clearToken, getAccessToken, getCookie, GetDataByToken } from "@/utils";
 import { usePathname } from "next/navigation";
+import { useGetUserByIdQuery } from "@/services/apis";
 
 const { Header } = Layout;
 
 const AppHeader: React.FC = () => {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const path = usePathname();
 
@@ -16,7 +17,7 @@ const AppHeader: React.FC = () => {
   }, []);
 
   const handleMenuClick = () => {
-    setDropdownVisible(!dropdownVisible);
+    setDropdownOpen(!dropdownOpen);
   };
 
   const handleLogout = () => {
@@ -26,7 +27,12 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  const token = isClient ? getCookie("jwt") : null;
+  const token = isClient ? (getAccessToken() as string) : undefined;
+  const id = token ? GetDataByToken(token).id : "";
+
+  const { data, isLoading } = useGetUserByIdQuery(id);
+
+  const user = isLoading && id ? null : data?.data;
 
   const menuItems = [
     {
@@ -71,19 +77,18 @@ const AppHeader: React.FC = () => {
               Home
             </Link>
           </Menu.Item>
-          {isClient && token ? (
+          {isClient && token && user ? (
             <Dropdown
               menu={{ items: menuItems }}
-              open={dropdownVisible}
-              onOpenChange={setDropdownVisible}
+              open={dropdownOpen}
+              onOpenChange={setDropdownOpen}
             >
               <Avatar
-                className="cursor-pointer bg-blue-500"
+                className="cursor-pointer"
                 onClick={handleMenuClick}
+                src={`${user?.avatar}?seed=${user?.name}`}
                 size="large"
-              >
-                U
-              </Avatar>
+              ></Avatar>
             </Dropdown>
           ) : (
             <Menu.Item key="auth" className="hover:bg-transparent">

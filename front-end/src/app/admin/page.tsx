@@ -11,7 +11,11 @@ const AdminPage: React.FC = () => {
     router.push("/admin/user");
   }, [router]);
 
-  return <div className="text-center mt-8">Welcome to the Admin Dashboard</div>;
+  return (
+    <div className="text-center mt-8 h-screen bg-gradient-to-r  from-green-200 via-blue-200 to-purple-200 ">
+      Welcome to the Admin Dashboard
+    </div>
+  );
 };
 
 export default AdminPage;

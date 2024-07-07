@@ -4,34 +4,36 @@ import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
-  Modal,
-  Form,
-  Input,
   Space,
   Avatar,
   Spin,
   message,
+  Popconfirm,
+  Switch,
+  Input,
 } from "antd";
 import {
-  PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
   LoadingOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { useGetUsersQuery, useUpdateUserByIdMutation } from "@/services/apis";
+import {
+  useGetUsersQuery,
+  useDeleteUserByIdMutation,
+  useUpdateUserByAdminMutation,
+} from "@/services/apis";
 import { IUser } from "@/types";
-import { getCookie, GetDataByToken } from "@/utils";
-import EditUserModal from "@/components/User/Modal";
+import { getAccessToken, GetDataByToken } from "@/utils";
 import { useRouter } from "next/navigation";
+import Error from "next/error";
 
 const UsersManagementPage: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetUsersQuery();
-  const [updateUser] = useUpdateUserByIdMutation();
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
-  const [editingUser, setEditingUser] = useState<IUser | null>(null);
+  const [updateUser] = useUpdateUserByAdminMutation();
+  const [deleteUser] = useDeleteUserByIdMutation();
   const [users, setUsers] = useState<IUser[]>([]);
-  const token = getCookie("jwt") as string;
+  const [searchQuery, setSearchQuery] = useState("");
+  const token = getAccessToken() as string;
   const router = useRouter();
 
   const { id: loggedInUserId } = GetDataByToken(token);
@@ -44,42 +46,80 @@ const UsersManagementPage: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      if (error) message.error("Failed to load users");
+      message.error("Failed to load users");
     }
   }, [error]);
 
-  const showModal = () => {
-    setIsModalVisible(true);
+  const handleDelete = async (userId: string) => {
+    try {
+      const response = await deleteUser(userId);
+      console.log(response);
+      if (response.data?.code === 404) {
+        throw new Error({
+          statusCode: 404,
+          message: "User not found",
+        });
+      } else if (response.data?.code === 500) {
+        throw new Error({
+          statusCode: 500,
+          message: "Internal server error",
+        });
+      }
+      message.success("User deleted successfully");
+      refetch();
+    } catch (error: any) {
+      if (error?.props?.statusCode === 404) {
+        message.error(error.props?.message);
+      } else message.error("Failed to delete user");
+    }
   };
 
-  const handleOk = () => {
-    setIsModalVisible(false);
+  const handleRoleChange = async (id: string | undefined, isAdmin: boolean) => {
+    try {
+      const response = await updateUser({
+        id: id || "",
+        body: { isAdmin },
+      });
+
+      if (response.data?.code == 401) {
+        throw new Error({
+          statusCode: 401,
+          message: "Phiên đăng nhập đã hết hạn",
+        });
+      } else if (response.data?.code == 404) {
+        throw new Error({
+          statusCode: 404,
+          message: "User not found",
+        });
+      }
+
+      message.success("User role updated successfully");
+      refetch();
+    } catch (error: any) {
+      if (error?.props?.message) {
+        message.error(error.props.message);
+      } else message.error("Failed to update user role");
+    }
   };
 
-  const handleCancel = () => {
-    setIsModalVisible(false);
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  const handleEdit = (user: IUser) => {
-    setEditingUser(user);
-    setIsEditModalVisible(true);
-  };
-
-  const handleSaveEdit = async (updatedUser: Partial<IUser>) => {
-    // Save the updated user information here
-    const userID = editingUser?.id as string;
-    await updateUser({ id: userID, body: updatedUser });
-    console.log("Updated User:", updatedUser);
-    setIsEditModalVisible(false);
-    refetch();
-  };
+  const filteredUsers = users.filter(
+    (user) =>
+      user?.userName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const columns = [
     {
       title: "Avatar",
       dataIndex: "avatar",
       key: "avatar",
-      render: (text: string) => <Avatar src={`https://${text}`} />,
+      render: (text: string, record: IUser) => (
+        <Avatar src={`${text}?seed=${record.name}`} />
+      ),
     },
     { title: "Username", dataIndex: "membername", key: "membername" },
     { title: "Name", dataIndex: "name", key: "name" },
@@ -92,20 +132,29 @@ const UsersManagementPage: React.FC = () => {
       title: "Admin",
       dataIndex: "isAdmin",
       key: "isAdmin",
-      render: (isAdmin: boolean) => (isAdmin ? "Yes" : "No"),
+      render: (isAdmin: boolean, record: IUser) => (
+        <Switch
+          checked={isAdmin}
+          onChange={(checked) => handleRoleChange(record?.id, checked)}
+        />
+      ),
     },
     {
       title: "Action",
       key: "action",
       render: (_text: any, record: any) => (
         <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
           {record.id !== loggedInUserId && (
-            <Button icon={<DeleteOutlined />} danger>
-              Delete
-            </Button>
+            <Popconfirm
+              title="Are you sure you want to delete this user?"
+              onConfirm={() => handleDelete(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button icon={<DeleteOutlined />} danger>
+                Delete
+              </Button>
+            </Popconfirm>
           )}
         </Space>
       ),
@@ -121,22 +170,21 @@ const UsersManagementPage: React.FC = () => {
   }
 
   return (
-    <div className="p-4 bg-gray-100 h-full">
-      <h1 className="text-2xl font-bold mb-4">Users Management</h1>
-
-      <div className="overflow-auto h-[calc(100vh-64px-80px)]">
-        <Table
-          columns={columns}
-          dataSource={users}
-          rowKey="id"
-          pagination={{ pageSize: 6 }}
-        />
-      </div>
-      <EditUserModal
-        visible={isEditModalVisible}
-        user={editingUser}
-        onClose={() => setIsEditModalVisible(false)}
-        onSave={handleSaveEdit}
+    <div className="p-4 bg-gradient-to-r from-green-200 via-blue-200 to-purple-200 h-full">
+      <h2 className="text-3xl font-bold mb-6 text-center">Users Management</h2>
+      <Input
+        placeholder="Search users"
+        prefix={<SearchOutlined />}
+        value={searchQuery}
+        onChange={handleSearch}
+        className="mb-6 w-full max-w-md mx-auto"
+      />
+      <Table
+        columns={columns}
+        dataSource={filteredUsers}
+        rowKey="id"
+        pagination={{ pageSize: 6 }}
+        className="bg-white shadow-md rounded-lg overflow-hidden"
       />
     </div>
   );

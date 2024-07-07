@@ -1,16 +1,17 @@
 import React from "react";
 import Link from "next/link";
 import { Card, Button, Image } from "antd";
-import { Watch } from "@/types";
+import { IWatch } from "@/types";
 
 const { Meta } = Card;
 
-const WatchCard: React.FC<{ watch?: Watch; loading?: boolean }> = ({
+const WatchCard: React.FC<{ watch?: IWatch; loading?: boolean }> = ({
   watch,
   loading,
 }) => {
   return (
     <Card
+      className="bg-gradient-to-r from-green-500 to-yellow-500"
       loading={loading}
       hoverable
       style={{ width: 300 }}

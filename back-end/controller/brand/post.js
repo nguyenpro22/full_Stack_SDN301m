@@ -32,6 +32,7 @@ const handleAddNewBrand = async (req, res, next) => {
       data: newBrand,
     });
   } catch (error) {
+    console.log(error);
     return makeErrorResponse(res, Error.UNKNOWN);
   }
 };

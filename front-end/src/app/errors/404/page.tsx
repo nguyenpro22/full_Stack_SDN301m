@@ -24,12 +24,6 @@ const NotFound: React.FC = () => {
       className="w-screen h-screen flex flex-col justify-center items-center bg-black text-green-500"
       style={{ fontFamily: "'Press Start 2P', cursive" }}
     >
-      <Head>
-        <link
-          href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap"
-          rel="stylesheet"
-        />
-      </Head>
       <div className="flex flex-col justify-between items-center h-1/2">
         <div
           className="text-9xl"

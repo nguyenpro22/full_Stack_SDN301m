@@ -13,13 +13,24 @@ export const userApi = createApi({
       }),
       providesTags: ["User"],
     }),
-    getUserById: builder.query<IResCommon<IUser>, string | undefined>({
+    getUserById: builder.query<IResCommon<IUser>, string>({
       query: (id) => ({
         url: `/member/${id}`,
       }),
       providesTags: ["User"],
     }),
     updateUserById: builder.mutation<
+      IResCommon<IUser>,
+      { body: Partial<IUser> }
+    >({
+      query: ({ body }) => ({
+        url: `/member/profile`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+    updateUserByAdmin: builder.mutation<
       IResCommon<IUser>,
       { id: string; body: Partial<IUser> }
     >({
@@ -30,9 +41,24 @@ export const userApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
+    resetPassword: builder.mutation<any, { body: any }>({
+      query: (body) => ({
+        url: `/member/rs-pwd`,
+        method: "POST",
+        body,
+      }),
+    }),
+    updatePassword: builder.mutation<IResCommon<IUser>, { body: any }>({
+      query: ({ body }) => ({
+        url: `/member/profile/pwd`,
+        method: "PUT",
+        body: body,
+      }),
+      invalidatesTags: ["User"],
+    }),
     deleteUserById: builder.mutation<IResCommon<IUser>, string>({
       query: (id) => ({
-        url: `/brands/${id}`,
+        url: `/member/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["User"],
@@ -44,5 +70,8 @@ export const {
   useGetUsersQuery,
   useGetUserByIdQuery,
   useUpdateUserByIdMutation,
+  useUpdateUserByAdminMutation,
+  useUpdatePasswordMutation,
   useDeleteUserByIdMutation,
+  useResetPasswordMutation,
 } = userApi;

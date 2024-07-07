@@ -7,8 +7,6 @@ interface WatchDetailsProps {
 }
 
 const WatchDetails: React.FC<WatchDetailsProps> = ({ data, avgRating }) => {
-  console.log(data);
-
   return (
     <div>
       <Image
@@ -19,7 +17,7 @@ const WatchDetails: React.FC<WatchDetailsProps> = ({ data, avgRating }) => {
         className="rounded-lg border"
       />
       <div className="mt-4">
-        <h1 className="text-3xl font-bold">{data?.watchName}</h1>
+        <h2 className="text-3xl font-bold">{data?.watchName}</h2>
         <div className="flex items-center gap-4 mt-2">
           <Rate disabled value={avgRating} />
           <span className="text-gray-500">({avgRating.toFixed(1)})</span>

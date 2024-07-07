@@ -6,6 +6,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "react-toastify";
+import { useRegisterMutation } from "@/services/apis";
+import Error from "next/error";
 
 const currentYear = new Date().getFullYear();
 
@@ -15,8 +17,8 @@ const schema = yup.object().shape({
     .min(5, "Username must be between 5 and 50 characters")
     .max(50, "Username must be between 5 and 50 characters")
     .matches(
-      /^[a-zA-Z0-9_@]+$/,
-      "Username can only contain letters, numbers, _ and @"
+      /^[a-zA-Z0-9_.@]+$/,
+      "Username can only contain letters, numbers, _ @ and ."
     )
     .required("Please input your username!"),
   password: yup
@@ -52,21 +54,47 @@ const RegisterPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: any) => {
-    // Simulate registration
-    console.log("Success:", data);
-    toast.success("Registration successful");
-    router.push("/login");
+  const [signup] = useRegisterMutation();
+
+  const onSubmit = async (data: any) => {
+    try {
+      const body = {
+        username: data.username,
+        password: data.password,
+        name: data.name,
+        avatar: data.avatar,
+        YoB: data.YoB,
+      };
+
+      const response = await signup(body);
+      if (response.data?.code === 409) {
+        throw new Error({
+          statusCode: 409,
+          message: "Tên đăng nhập đã tồn tại",
+        });
+      }
+
+      toast.success("Registration successful");
+      router.push("/auth/login");
+    } catch (e: any) {
+      if (e.props.statusCode === 409) {
+        toast.error(e.props.message);
+        return;
+      }
+      toast.error("Registration failed");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card className="w-full max-w-md p-6 shadow-lg rounded-lg">
-        <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
+    <div className="h-screen flex items-center justify-center bg-gradient-to-r from-green-400 to-blue-500 p-6">
+      <Card className="w-full max-w-lg p-8 shadow-2xl rounded-lg bg-white">
+        <h2 className="text-3xl font-extrabold text-center mb-6 text-gray-900">
+          Register
+        </h2>
         <form
           onSubmit={handleSubmit(onSubmit)}
           noValidate
-          className="space-y-4"
+          className="space-y-6"
         >
           <div>
             <label className="block text-sm font-medium text-gray-700">
@@ -75,9 +103,9 @@ const RegisterPage: React.FC = () => {
             <input
               {...register("username")}
               placeholder="Username"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`input input-bordered w-full px-4 py-3 border ${
                 errors.username ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200`}
             />
             {errors.username && (
               <span className="text-red-600 text-sm">
@@ -93,9 +121,9 @@ const RegisterPage: React.FC = () => {
               type="password"
               {...register("password")}
               placeholder="Password"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`input input-bordered w-full px-4 py-3 border ${
                 errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200`}
             />
             {errors.password && (
               <span className="text-red-600 text-sm">
@@ -110,9 +138,9 @@ const RegisterPage: React.FC = () => {
             <input
               {...register("name")}
               placeholder="Name"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`input input-bordered w-full px-4 py-3 border ${
                 errors.name ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200`}
             />
             {errors.name && (
               <span className="text-red-600 text-sm">
@@ -127,9 +155,9 @@ const RegisterPage: React.FC = () => {
             <input
               {...register("avatar")}
               placeholder="Avatar URL"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`input input-bordered w-full px-4 py-3 border ${
                 errors.avatar ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200`}
             />
             {errors.avatar && (
               <span className="text-red-600 text-sm">
@@ -144,9 +172,9 @@ const RegisterPage: React.FC = () => {
             <input
               {...register("YoB")}
               placeholder="Year of Birth"
-              className={`input input-bordered w-full px-3 py-2 border ${
+              className={`input input-bordered w-full px-4 py-3 border ${
                 errors.YoB ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring focus:ring-indigo-100`}
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200`}
             />
             {errors.YoB && (
               <span className="text-red-600 text-sm">{errors.YoB.message}</span>
@@ -156,13 +184,13 @@ const RegisterPage: React.FC = () => {
             <Button
               type="primary"
               htmlType="submit"
-              className="w-full py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               Register
             </Button>
           </div>
         </form>
-        <div className="text-center mt-4">
+        <div className="text-center mt-6">
           <p>
             Already have an account?{" "}
             <a

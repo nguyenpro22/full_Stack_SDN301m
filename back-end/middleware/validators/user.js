@@ -72,24 +72,7 @@ const userUpdateValidator = () => {
       .withMessage(COMMON_CONFIG.Member.password.message)
       .matches(COMMON_CONFIG.Member.password.regex)
       .withMessage(COMMON_CONFIG.Member.password.messageRegex),
-    body("name")
-      .optional()
-      .isLength({
-        min: COMMON_CONFIG.Member.name.minLength,
-        max: COMMON_CONFIG.Member.name.maxLength,
-      })
-      .withMessage(COMMON_CONFIG.Member.name.message),
-    body("avatar")
-      .optional()
-      .isURL()
-      .withMessage(COMMON_CONFIG.Member.avatar.message),
-    body("YoB")
-      .optional()
-      .isInt({
-        min: COMMON_CONFIG.Member.YoB.min,
-        max: COMMON_CONFIG.Member.YoB.max,
-      })
-      .withMessage(COMMON_CONFIG.Member.YoB.message),
+    body("isAdmin").isBoolean(),
   ];
 };
 

@@ -3,23 +3,26 @@ const { MemberModel } = require("../../models");
 const { makeErrorResponse } = require("../../utils/http.utils");
 
 const authorizeAdminRole = () => {
-  try {
-    return async (req, res, next) => {
+  return async (req, res, next) => {
+    try {
       const user = await MemberModel.findOne({ _id: req.user.id });
+
       if (user) {
         if (user.isAdmin === true) {
-          next();
+          return next();
         } else {
-          next(Error.FORBIDDEN);
+          return next(Error.FORBIDDEN);
         }
       } else {
-        next(Error.FORBIDDEN);
+        return next(Error.FORBIDDEN);
       }
-    };
-  } catch (err) {
-    console.log(err);
-  }
+    } catch (err) {
+      console.log(err);
+      return next(Error.UNKNOWN);
+    }
+  };
 };
+
 const authorizeAdminRoleSession = () => {
   return async (req, res, next) => {
     const user = await MemberModel.findOne({ _id: req.user });
